@@ -1,0 +1,21 @@
+{
+  "name": "澳門奢華休閒之旅",
+  "short_name": "澳門奢華休閒之旅",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ff8787",
+  "theme_color": "#ff8787",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "21.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "21.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
