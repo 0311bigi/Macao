@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>澳門奢華休閒之旅</title>
+    
+    <!-- 手機主畫面圖示設定 (PWA/Web App) -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1051/1051314.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="澳門助攻王">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons Library -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { background-color: #020617; }
+        
+        .glow-gold {
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+            border-color: rgba(234, 179, 8, 0.6) !important;
+        }
+
+        /* 撲克牌樣式 */
+        .playing-card {
+            width: 60px;
+            height: 90px;
+            border-radius: 8px;
+            background: white;
+            color: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        /**
+         * 修正後的圖示組件
+         */
+        const Icon = ({ name, size = 16, className = "" }) => {
+            const containerRef = useRef(null);
+            
+            useEffect(() => {
+                if (window.lucide && containerRef.current) {
+                    containerRef.current.innerHTML = `<i data-lucide="${name}"></i>`;
+                    window.lucide.createIcons({
+                        root: containerRef.current,
+                        attrs: {
+                            width: size,
+                            height: size,
+                            class: className,
+                            'stroke-width': 2
+                        }
+                    });
+                }
+            }, [name, size, className]);
+
+            return <span key={name} ref={containerRef} className="inline-flex items-center justify-center"></span>;
+        };
+
+        const BlackjackGame = () => {
+            const [deck, setDeck] = useState([]);
+            const [playerHand, setPlayerHand] = useState([]);
+            const [dealerHand, setDealerHand] = useState([]);
+            const [gameState, setGameState] = useState('idle'); 
+            const [message, setMessage] = useState('準備好了嗎？點擊開始遊戲！');
+
+            const initDeck = () => {
+                const suits = ['♠', '♥', '♦', '♣'];
+                const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+                let newDeck = [];
+                for (let s of suits) {
+                    for (let v of values) {
+                        newDeck.push({ suit: s, value: v });
+                    }
+                }
+                return newDeck.sort(() => Math.random() - 0.5);
+            };
+
+            const calculateScore = (hand) => {
+                let score = 0;
+                let aces = 0;
+                for (let card of hand) {
+                    if (card.value === 'A') {
+                        aces += 1;
+                        score += 11;
+                    } else if (['J', 'Q', 'K'].includes(card.value)) {
+                        score += 10;
+                    } else {
+                        score += parseInt(card.value);
+                    }
+                }
+                while (score > 21 && aces > 0) {
+                    score -= 10;
+                    aces -= 1;
+                }
+                return score;
+            };
+
+            const startGame = () => {
+                const newDeck = initDeck();
+                const p1 = newDeck.pop();
+                const d1 = newDeck.pop();
+                const p2 = newDeck.pop();
+                const d2 = newDeck.pop();
+                setDeck(newDeck);
+                setPlayerHand([p1, p2]);
+                setDealerHand([d1, d2]);
+                setGameState('playing');
+                setMessage('你的回合！要牌(Hit)還是停牌(Stand)？');
+            };
+
+            const hit = () => {
+                const newDeck = [...deck];
+                const card = newDeck.pop();
+                const newHand = [...playerHand, card];
+                setDeck(newDeck);
+                setPlayerHand(newHand);
+                if (calculateScore(newHand) > 21) {
+                    setGameState('ended');
+                    setMessage('爆牌了！莊家獲勝。');
+                }
+            };
+
+            const stand = () => {
+                setGameState('dealer_turn');
+                let currentDealerHand = [...dealerHand];
+                let currentDeck = [...deck];
+                
+                const dealerInterval = setInterval(() => {
+                    const score = calculateScore(currentDealerHand);
+                    if (score < 17) {
+                        const card = currentDeck.pop();
+                        currentDealerHand.push(card);
+                        setDealerHand([...currentDealerHand]);
+                    } else {
+                        clearInterval(dealerInterval);
+                        const dealerScore = calculateScore(currentDealerHand);
+                        const playerScore = calculateScore(playerHand);
+                        setGameState('ended');
+                        if (dealerScore > 21) setMessage('莊家爆牌！你贏了！');
+                        else if (dealerScore > playerScore) setMessage('莊家分數較高，你輸了。');
+                        else if (dealerScore < playerScore) setMessage('你贏了！恭喜！');
+                        else setMessage('平手！');
+                    }
+                }, 600);
+            };
+
+            return (
+                <div className="space-y-6 text-center animate-fade-in-up">
+                    <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 shadow-xl">
+                        <div className="mb-8">
+                            <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">莊家的牌 (Score: {gameState === 'ended' ? calculateScore(dealerHand) : '?'})</p>
+                            <div className="flex justify-center gap-2">
+                                {dealerHand.map((card, i) => (
+                                    <div key={i} className={`playing-card ${(card.suit === '♥' || card.suit === '♦') ? 'text-red-500' : 'text-black'}`}>
+                                        {gameState === 'playing' && i === 1 ? '?' : `${card.value}${card.suit}`}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="mb-8 relative">
+                             <div className="absolute top-1/2 left-0 right-0 h-px bg-slate-700 -translate-y-1/2"></div>
+                             <span className="relative z-10 bg-slate-800 px-4 text-xs font-bold text-yellow-500">VS</span>
+                        </div>
+
+                        <div className="mb-4">
+                            <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">你的牌 (Score: {calculateScore(playerHand)})</p>
+                            <div className="flex justify-center gap-2 flex-wrap">
+                                {playerHand.map((card, i) => (
+                                    <div key={i} className={`playing-card ${(card.suit === '♥' || card.suit === '♦') ? 'text-red-500' : 'text-black'}`}>
+                                        {card.value}{card.suit}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-slate-800/50 rounded-xl border border-white/5 min-h-[60px] flex items-center justify-center">
+                        <p className="text-sm font-medium text-blue-200 text-center">{message}</p>
+                    </div>
+
+                    <div className="flex justify-center gap-4">
+                        {gameState === 'idle' || gameState === 'ended' ? (
+                            <button onClick={startGame} className="flex-1 py-4 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-xl font-bold shadow-lg shadow-yellow-500/20 active:scale-95 transition-all text-white">
+                                新遊戲 (開始發牌)
+                            </button>
+                        ) : (
+                            <>
+                                <button disabled={gameState !== 'playing'} onClick={hit} className={`flex-1 py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-all ${gameState === 'playing' ? 'bg-blue-600 text-white shadow-blue-500/20' : 'bg-slate-700 text-slate-500'}`}>
+                                    要牌 (Hit)
+                                </button>
+                                <button disabled={gameState !== 'playing'} onClick={stand} className={`flex-1 py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-all ${gameState === 'playing' ? 'bg-red-600 text-white shadow-red-500/20' : 'bg-slate-700 text-slate-500'}`}>
+                                    停牌 (Stand)
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const ItineraryApp = () => {
+            const [activeTab, setActiveTab] = useState(0);
+            const [currentTime, setCurrentTime] = useState(new Date());
+            const currentYear = new Date().getFullYear();
+
+            const itinerary = useMemo(() => [
+                {
+                    date: `${currentYear}-01-15`,
+                    events: [
+                        { id: 'd1e1', time: '16:00', icon: 'car', title: '機場接送出發', desc: '專車前往桃園機場。', type: 'transport' },
+                        { id: 'd1e2', time: '17:30', icon: 'utensils', title: '桃園機場 VIP 室', desc: 'T1 航廈享受貴賓室。', type: 'relax' },
+                        { id: 'd1e3', time: '20:10', icon: 'plane', title: '起飛 NX615', desc: '桃園 T1 -> 澳門。', type: 'flight', detail: '20:10 - 22:05' },
+                        { id: 'd1e4', time: '22:05', icon: 'map-pin', title: '抵達澳門', desc: '領取行李與入關。', type: 'arrival' },
+                        { id: 'd1e5', time: '23:00', icon: 'hotel', title: '入住 W Hotel', desc: '體驗時尚設計與奢華氛圍。', type: 'hotel' },
+                        { id: 'd1e6', time: '23:30', icon: 'sparkles', title: '賭場試手氣', desc: '感受澳門不夜城魅力。', type: 'casino' },
+                    ]
+                },
+                {
+                    date: `${currentYear}-01-16`,
+                    events: [
+                        { id: 'd2e1', time: '10:00', icon: 'sun', title: '慵懶早晨', desc: '享受飯店設施或補眠。', type: 'relax' },
+                        { id: 'd2e2', time: '12:00', icon: 'trophy', title: '玥龍軒 米其林午餐', desc: '新濠影匯一星米其林粵菜。', type: 'food' },
+                        { id: 'd2e3', time: '14:30', icon: 'sparkles', title: '賭場爭霸 / 自由活動', desc: '挑戰運氣或購物逛街。', type: 'casino' },
+                        { id: 'd2e4', time: '19:00', icon: 'moon', title: '晚餐 & 澳門夜景', desc: '探索當地美食或路氹城夜景。', type: 'relax' },
+                    ]
+                },
+                {
+                    date: `${currentYear}-01-17`,
+                    events: [
+                        { id: 'd3e1', time: '09:30', icon: 'hotel', title: '退房 Checkout', desc: '整理戰利品準備前往機場。', type: 'hotel' },
+                        { id: 'd3e2', time: '10:00', icon: 'car', title: '前往澳門機場', desc: '專車前往機場。', type: 'transport' },
+                        { id: 'd3e3', time: '12:00', icon: 'plane', title: '起飛 NX612', desc: '澳門 -> 桃園 T1。', type: 'flight', detail: '12:00 - 13:40' },
+                        { id: 'd3e4', time: '13:40', icon: 'map-pin', title: '抵達台灣', desc: '歡迎回家！', type: 'arrival' },
+                        { id: 'd3e5', time: '14:30', icon: 'car', title: '機場接送', desc: '快樂回家，整理回憶。', type: 'transport' },
+                    ]
+                }
+            ], [currentYear]);
+
+            const [checklist, setChecklist] = useState([
+                { id: 1, text: '護照 (效期6個月以上)', checked: false, category: '重要證件' },
+                { id: 2, text: '機票 / 酒店訂房確認單', checked: false, category: '重要證件' },
+                { id: 4, text: '港幣 / 澳門幣 (現金)', checked: false, category: '錢財' },
+                { id: 5, text: '信用卡 (海外回饋高)', checked: false, category: '錢財' },
+                { id: 6, text: '網卡 / 開通漫遊', checked: false, category: '電子設備' },
+                { id: 7, text: '行動電源 (需手提上機)', checked: false, category: '電子設備' },
+                { id: 8, text: '轉接頭 (澳門為英式三腳)', checked: false, category: '電子設備' },
+                { id: 9, text: '正式服裝 (米其林/賭場)', checked: false, category: '衣物' },
+                { id: 10, text: '個人常備藥品', checked: false, category: '雜項' },
+                { id: 11, text: '雨具 (摺疊傘)', checked: false, category: '雜項' },
+            ]);
+
+            const toggleCheck = (id) => {
+                setChecklist(prev => prev.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
+            };
+
+            const tabs = [
+                { id: 0, label: '1/15', title: '啟程 & 奢華入住' },
+                { id: 1, label: '1/16', title: '米其林饗宴 & 娛樂' },
+                { id: 2, label: '1/17', title: '滿載而歸' },
+                { id: 3, label: '21點', title: '賭場預演：21點遊戲' }, 
+                { id: 4, label: '檢查表', title: '行前準備清單' },
+            ];
+
+            const groupedChecklist = checklist.reduce((acc, item) => {
+                if (!acc[item.category]) acc[item.category] = [];
+                acc[item.category].push(item);
+                return acc;
+            }, {});
+
+            const progress = Math.round((checklist.filter(i => i.checked).length / checklist.length) * 100);
+            const tripStartDate = new Date(`${currentYear}-01-15T16:00:00`);
+            const getCountdown = () => {
+                const diff = tripStartDate - currentTime;
+                if (diff <= 0) return "旅程進行中！";
+                const d = Math.floor(diff / 86400000);
+                const h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                return `${d}天 ${h}時 ${m}分`;
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-955 flex justify-center items-start pt-0 sm:pt-4 sm:pb-4 font-sans text-slate-100">
+                    <div className="w-full max-w-md bg-slate-900 min-h-screen sm:min-h-[90vh] sm:rounded-[2.5rem] sm:border-[8px] sm:border-slate-800 shadow-2xl relative overflow-hidden pb-10 text-left">
+                        
+                        <header className="relative bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-6 shadow-xl sm:rounded-t-[2rem]">
+                            <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none overflow-hidden sm:rounded-t-[2rem]">
+                                <div className="absolute top-10 right-10 w-32 h-32 bg-yellow-500 rounded-full blur-3xl"></div>
+                                <div className="absolute bottom-10 left-10 w-32 h-32 bg-pink-500 rounded-full blur-3xl"></div>
+                            </div>
+                            <div className="relative z-10 text-left">
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="bg-white/10 px-3 py-1 rounded-full text-xs font-semibold tracking-wider text-yellow-400 border border-yellow-400/30">MACAO VIP TRIP</span>
+                                    <Icon name="plane" className="text-white/50" />
+                                </div>
+                                <h1 className="text-3xl font-bold mb-2 text-white drop-shadow-md">澳門奢華休閒之旅</h1>
+                                <p className="text-blue-200 flex items-center gap-2 text-sm"><Icon name="clock" size={16} /> {getCountdown()}</p>
+                            </div>
+                        </header>
+
+                        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-sm pt-4 px-2 shadow-lg overflow-x-auto no-scrollbar">
+                            <div className="flex justify-between bg-slate-800 rounded-xl p-1 mb-4 min-w-max">
+                                {tabs.map((tab, index) => (
+                                    <button key={index} onClick={() => setActiveTab(index)}
+                                        className={`min-w-[70px] py-2 px-3 text-xs sm:text-sm font-medium rounded-lg transition-all duration-300 ${activeTab === index ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'}`}>
+                                        {tab.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="px-2 pb-2">
+                                <h2 className="text-lg font-bold text-white text-left">{tabs[activeTab].title}</h2>
+                                {activeTab === 4 && <div className="text-xs text-yellow-500 mt-1">準備進度: {progress}%</div>}
+                            </div>
+                        </div>
+
+                        <main className="px-4 pt-2 pb-20">
+                            {activeTab < 3 && (
+                                <div className="space-y-6 relative">
+                                    <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-700"></div>
+                                    {itinerary[activeTab].events.map((event, idx) => {
+                                        const isHighlight = event.type === 'hotel' || event.type === 'food' || event.type === 'casino';
+                                        return (
+                                            <div key={event.id} className="relative pl-10 animate-fade-in-up">
+                                                <div className={`absolute left-0 top-1 w-8 h-8 rounded-full flex items-center justify-center border-4 border-slate-900 z-10 ${isHighlight ? 'bg-yellow-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                                                    <Icon name={event.icon} size={14} />
+                                                </div>
+                                                <div className={`rounded-xl p-4 border transition-all ${isHighlight ? 'bg-gradient-to-br from-slate-800 to-slate-800 border-yellow-500/50 shadow-lg' : 'bg-slate-800 border-slate-700'}`}>
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <span className="text-xs font-mono text-blue-300 bg-blue-900/30 px-2 py-0.5 rounded">{event.time}</span>
+                                                        {event.type === 'flight' && <Icon name="plane" className="text-blue-400" />}
+                                                    </div>
+                                                    <h3 className="font-bold text-lg mb-1 text-white text-left">{event.title}</h3>
+                                                    <p className="text-gray-400 text-sm text-left">{event.desc}</p>
+                                                    {event.detail && (
+                                                        <div className="mt-3 bg-slate-900/50 rounded-lg p-3 flex items-center justify-between border border-white/5">
+                                                            <div className="text-center"><div className="text-xs text-gray-500 text-[10px]">DEP</div><div className="text-sm font-bold text-white">{event.detail.split(' - ')[0]}</div></div>
+                                                            <Icon name="arrow-right" size={14} className="text-gray-600" />
+                                                            <div className="text-center"><div className="text-xs text-gray-500 text-[10px]">ARR</div><div className="text-sm font-bold text-white">{event.detail.split(' - ')[1]}</div></div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {activeTab === 3 && <BlackjackGame />}
+
+                            {activeTab === 4 && (
+                                <div className="space-y-6 animate-fade-in-up">
+                                    <div className="bg-slate-800 rounded-full h-4 w-full overflow-hidden border border-slate-700">
+                                        <div className="h-full bg-gradient-to-r from-yellow-500 to-amber-600 transition-all duration-500" style={{width: `${progress}%`}}></div>
+                                    </div>
+                                    {Object.entries(groupedChecklist).map(([category, items]) => (
+                                        <div key={category} className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
+                                            <div className="bg-slate-800 p-3 border-b border-slate-700 flex items-center gap-2 text-left"><Icon name="clipboard-list" className="text-yellow-400" /><h3 className="font-bold">{category}</h3></div>
+                                            {items.map((item) => (
+                                                <div key={item.id} onClick={() => toggleCheck(item.id)} className="p-4 flex items-center gap-4 cursor-pointer border-b border-slate-700/30 hover:bg-slate-800 text-left">
+                                                    <Icon name={item.checked ? "square-check" : "square"} size={24} className={item.checked ? "text-green-400" : "text-slate-500"} />
+                                                    <span className={`text-sm text-left ${item.checked ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{item.text}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ItineraryApp />);
+    </script>
+</body>
+</html>
