@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>澳門奢華休閒之旅</title>
+    <title>澳門奢華之旅</title>
     
     <!-- === 手機主畫面 App 圖示設定 === -->
-    <link rel="icon" href="21.png">	
-    <link rel="apple-touch-icon" href="21.png">
-    <link rel="manifest" href="manifest.json">	
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/W_Hotels_logo.svg/1024px-W_Hotels_logo.svg.png">
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/W_Hotels_logo.svg/1024px-W_Hotels_logo.svg.png">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="澳門助攻王">
@@ -35,15 +35,10 @@
             50% { transform: scale(1.1) rotate(5deg); opacity: 1; filter: brightness(1.5); }
             100% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
         }
-        @keyframes gold-sparkle {
-            0% { text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24; }
-            50% { text-shadow: 0 0 30px #f59e0b, 0 0 50px #fbbf24, 0 0 70px #f59e0b; }
-            100% { text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24; }
-        }
         
         .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
         .animate-float { animation: float 8s ease-in-out infinite; }
-        .animate-bj-burst { animation: blackjack-burst 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, gold-sparkle 1.5s infinite; }
+        .animate-bj-burst { animation: blackjack-burst 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -66,14 +61,12 @@
             linear-gradient(60deg, #1e293b 25%, transparent 25.5%, transparent 75%, #1e293b 75.5%, #1e293b),
             linear-gradient(60deg, #1e293b 25%, transparent 25.5%, transparent 75%, #1e293b 75.5%, #1e293b);
             background-size: 40px 70px;
-            background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
             opacity: 0.3;
         }
 
-        /* 調大後的撲克牌背面樣式 */
         .card-back-deco {
-            width: 70px;
-            height: 100px;
+            width: 60px;
+            height: 85px;
             border-radius: 10px;
             background: #7f1d1d; 
             border: 2px solid #ffffff;
@@ -84,20 +77,14 @@
             justify-content: center;
         }
         .card-back-inner {
-            width: calc(100% - 8px);
-            height: calc(100% - 8px);
+            width: calc(100% - 6px);
+            height: calc(100% - 6px);
             border: 1px solid rgba(255,215,0,0.2);
             background-image: repeating-conic-gradient(#991b1b 0% 25%, #7f1d1d 0% 50%);
-            background-size: 8px 8px;
+            background-size: 6px 6px;
             border-radius: 4px;
         }
 
-        .glow-gold {
-            box-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
-            border-color: rgba(234, 179, 8, 0.8) !important;
-        }
-
-        /* 調大後的撲克牌正面樣式 */
         .playing-card {
             width: 70px;
             height: 100px;
@@ -148,8 +135,8 @@
         const CardBack = ({ className = "", delay = "0s", animate = false }) => (
             <div className={`card-back-deco ${animate ? 'animate-float' : ''} ${className}`} style={{ animationDelay: delay }}>
                 <div className="card-back-inner flex items-center justify-center text-center">
-                    <div className="w-6 h-6 rounded-full border border-yellow-500/10 flex items-center justify-center text-center">
-                        <Icon name="crown" size={14} className="text-yellow-500/20" />
+                    <div className="w-5 h-5 rounded-full border border-yellow-500/10 flex items-center justify-center text-center">
+                        <Icon name="crown" size={12} className="text-yellow-500/20" />
                     </div>
                 </div>
             </div>
@@ -162,36 +149,43 @@
             const [currentHandIdx, setCurrentHandIdx] = useState(0);
             const [dealerHand, setDealerHand] = useState([]);
             const [bets, setBets] = useState([0]); 
+            const [insuranceBet, setInsuranceBet] = useState(0); 
             const [gameState, setGameState] = useState('idle'); 
-            const [message, setMessage] = useState('每注 100 元。Blackjack 1.5 倍獎金！');
+            const [message, setMessage] = useState('澳門賭場規則：庄家一張明牌，不設五小龍。');
             const [advice, setAdvice] = useState('');
             const [showBJEffect, setShowBJEffect] = useState(false);
+            const [lastNetWin, setLastNetWin] = useState(null); // 新增：追蹤本局損益
 
             const resetSession = () => {
                 setChips(1000); 
                 setGameState('idle'); 
-                setMessage('準備好了嗎？每注 100 元，Blackjack 獲勝 1.5 倍獎金！');
+                setMessage('準備好了嗎？Blackjack 1.5 倍獎金！');
                 setPlayerHands([]); 
                 setDealerHand([]); 
                 setCurrentHandIdx(0); 
                 setBets([0]);
+                setInsuranceBet(0);
+                setAdvice('');
+                setLastNetWin(null);
             };
 
             const initDeck = () => {
                 const suits = ['♠', '♥', '♦', '♣'];
                 const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
                 let newDeck = [];
-                for (let s of suits) { for (let v of values) { newDeck.push({ suit: s, value: v }); } }
+                for (let i = 0; i < 6; i++) { 
+                    for (let s of suits) { for (let v of values) { newDeck.push({ suit: s, value: v }); } }
+                }
                 return newDeck.sort(() => Math.random() - 0.5);
             };
 
             const calculateScore = (hand) => {
-                if (!hand) return 0;
+                if (!hand || hand.length === 0) return 0;
                 let score = 0;
                 let aces = 0;
                 for (let card of hand) {
                     if (card.value === 'A') { aces += 1; score += 11; }
-                    else if (['J', 'Q', 'K'].includes(card.value)) { score += 10; }
+                    else if (['J', 'Q', 'K', '10'].includes(card.value)) { score += 10; }
                     else { score += parseInt(card.value); }
                 }
                 while (score > 21 && aces > 0) { score -= 10; aces -= 1; }
@@ -202,16 +196,15 @@
                 return hand && hand.length === 2 && calculateScore(hand) === 21;
             };
 
-            // 核心邏輯：提供詳細的原因解釋
             const getStrategyAdvice = (pHand, dHand) => {
                 if (gameState !== 'playing' || !pHand || pHand.length < 2 || !dHand || dHand.length === 0) return "";
-                const pScore = calculateScore(pHand);
-                if (pScore >= 21) return "";
+                const score = calculateScore(pHand);
+                if (score >= 21) return "";
 
                 const dCardValue = dHand[0].value;
                 const getVal = (v) => {
                     if (v === 'A') return 11;
-                    if (['J', 'Q', 'K'].includes(v)) return 10;
+                    if (['J', 'Q', 'K', '10'].includes(v)) return 10;
                     return parseInt(v);
                 };
                 const dScore = getVal(dCardValue);
@@ -219,89 +212,112 @@
                 const canDouble = pHand.length === 2;
                 const canSurrender = pHand.length === 2 && playerHands.length === 1;
 
-                // --- 投降邏輯 (Surrender) ---
+                // 1. 投降策略
                 if (canSurrender) {
-                    if (pScore === 15 && (dScore === 9 || dScore === 11)) 
-                        return `建議：投降 (Surrender)。因為閒家 15 點 vs 莊家 ${dText} (大牌)，勝率極低，止損一半最科學。`;
-                    if (pScore === 16 && (dScore >= 9 && dScore <= 11)) 
-                        return `建議：投降 (Surrender)。因為閒家 16 點 vs 莊家 ${dText} (強牌)，是 21 點最差局面，建議止損。`;
+                    if (score === 15 && dScore === 10) return `建議：投降 (Surrender)。理由：閒家 15 點 vs 庄家 10。`;
+                    if (score === 16 && (dScore >= 9 && dScore <= 11)) return `建議：投降 (Surrender)。理由：閒家 16 點對抗庄家強牌。`;
                 }
 
-                // --- 對子邏輯 (Pairs) ---
+                // 2. 對子策略
                 if (pHand.length === 2 && pHand[0].value === pHand[1].value) {
                     const pairVal = pHand[0].value;
-                    if (pairVal === 'A' || pairVal === '8') return `建議：分牌 (Split)。因為對 A 或對 8 在數學上分牌長期期望值更高。`;
-                    if (pairVal === '2' || pairVal === '3') 
-                        return (dScore >= 2 && dScore <= 7) ? `建議：分牌 (Split)。因為莊家顯示 ${dText} (弱牌)，分牌可擴大優勢。` : `建議：要牌 (Hit)。因為莊家顯示 ${dText} 為強牌。`;
-                    if (pairVal === '4') 
-                        return (dScore === 5 || dScore === 6) ? `建議：分牌 (Split)。莊家 5、6 點極易爆牌。` : `建議：要牌 (Hit)。`;
-                    if (pairVal === '5') 
-                        return (dScore >= 2 && dScore <= 9) ? (canDouble ? `建議：加倍 (Double)。理由：對 5 當作硬 10 點且莊家亮牌為 ${dText}。` : `建議：要牌 (Hit)。`) : `建議：要牌 (Hit)。`;
-                    if (pairVal === '6') 
-                        return (dScore >= 2 && dScore <= 6) ? `建議：分牌 (Split)。莊家亮 ${dText} 為弱牌。` : `建議：要牌 (Hit)。`;
-                    if (pairVal === '7') 
-                        return (dScore >= 2 && dScore <= 7) ? `建議：分牌 (Split)。莊家亮 ${dText} 為弱牌。` : `建議：要牌 (Hit)。`;
-                    if (pairVal === '9') 
-                        return ([2,3,4,5,6,8,9].includes(dScore)) ? `建議：分牌 (Split)。` : `建議：停牌 (Stand)。莊家 ${dText} 已大，守住 18 點。`;
-                    if (['10', 'J', 'Q', 'K'].includes(pairVal)) return `建議：停牌 (Stand)。理由：20 點已極大，切勿分牌。`;
-                }
-
-                // --- 軟牌邏輯 (Soft) ---
-                const isSoft = pHand.some(c => c.value === 'A') && (pHand.reduce((acc, c) => acc + (['J','Q','K'].includes(c.value)?10:(c.value==='A'?1:parseInt(c.value))), 0) + 10 <= 21);
-                if (isSoft) {
-                    const otherCardVal = pHand[0].value === 'A' ? getVal(pHand[1].value) : getVal(pHand[0].value);
-                    if (pHand.length === 2) {
-                        if (otherCardVal === 2 || otherCardVal === 3) 
-                            return (dScore === 5 || dScore === 6) ? (canDouble ? `建議：加倍 (Double)。對抗莊家 ${dText} 點。` : `建議：要牌 (Hit)。`) : `建議：要牌 (Hit)。`;
-                        if (otherCardVal === 4 || otherCardVal === 5) 
-                            return (dScore >= 4 && dScore <= 6) ? (canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`) : `建議：要牌 (Hit)。`;
-                        if (otherCardVal === 6) 
-                            return (dScore >= 3 && dScore <= 6) ? (canDouble ? `建議：加倍 (Double)。` : `建議 : 要牌 (Hit)`) : `建議：要牌 (Hit)。`;
-                        if (otherCardVal === 7) {
-                            if ([2, 7, 8].includes(dScore)) return `建議：停牌 (Stand)。軟 18 點對抗莊家 ${dText} 點已足夠。`;
-                            if (dScore >= 3 && dScore <= 6) return (canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)`);
-                            return `建議：要牌 (Hit)。`;
-                        }
+                    if (pairVal === 'A' || pairVal === '8') return `建議：分牌 (Split)。理由：對 A/8 必須分牌。`;
+                    if (pairVal === '9') {
+                        if ([2, 3, 4, 5, 6, 8, 9].includes(dScore)) return `建議：分牌 (Split)。理由：對 9 面對 ${dText} 具優勢。`;
+                        return `建議：停牌 (Stand)。理由：守住硬 18 點。`;
                     }
-                    return pScore >= 19 ? `建議：停牌 (Stand)。軟 ${pScore} 點。` : `建議：要牌 (Hit)。`;
+                    if (pairVal === '7') {
+                        if (dScore >= 2 && dScore <= 7) return `建議：分牌 (Split)。理由：庄家亮牌偏弱。`;
+                        return `建議：要牌 (Hit)。理由：庄家強牌，硬 14 點要牌。`;
+                    }
+                    if (pairVal === '6') {
+                        if (dScore >= 2 && dScore <= 6) return `建議：分牌 (Split)。理由：DAS 規則下對抗弱牌分牌。`;
+                        return `建議：要牌 (Hit)。`;
+                    }
+                    if (pairVal === '5') {
+                        return (dScore <= 9) ? (canDouble ? `建議：加倍 (Double)。理由：對 5 當硬 10 點。` : `建議：要牌 (Hit)。`) : `建議：要牌 (Hit)。`;
+                    }
+                    if (pairVal === '4') {
+                        if (dScore === 5 || dScore === 6) return `建議：分牌 (Split)。理由：對 4 對抗 5, 6 應分牌。`;
+                        return `建議：要牌 (Hit)。`;
+                    }
+                    if (pairVal === '2' || pairVal === '3') {
+                        if (dScore >= 2 && dScore <= 7) return `建議：分牌 (Split)。理由：DAS 規則建議分牌。`;
+                        return `建議：要牌 (Hit)。`;
+                    }
+                    if (['10', 'J', 'Q', 'K'].includes(pairVal)) return `建議：停牌 (Stand)。`;
                 }
 
-                // --- 硬牌邏輯 (Hard) ---
-                if (pScore <= 8) return `建議：要牌 (Hit)。閒家僅 ${pScore} 點無爆牌風險。`;
-                if (pScore === 9) 
-                    return (dScore >= 3 && dScore <= 6) ? (canDouble ? `建議：加倍 (Double)。莊家 ${dText} 為弱牌。` : `建議：要牌 (Hit)。`) : `建議：要牌 (Hit)。`;
-                if (pScore === 10) 
-                    return (dScore >= 2 && dScore <= 9) ? (canDouble ? `建議：加倍 (Double)。莊家顯示 ${dText}。` : `建議：要牌 (Hit)。`) : `建議：要牌 (Hit)。`;
-                if (pScore === 11) 
-                    return dScore === 11 ? `建議：要牌 (Hit)。莊家顯示 A，不要加倍以免莊家 BJ。` : (canDouble ? `建議：加倍 (Double)。11 點對抗莊家 ${dText} 有極大優勢。` : `建議：要牌 (Hit)。`);
-                if (pScore === 12) 
-                    return (dScore >= 4 && dScore <= 6) ? `建議：停牌 (Stand)。理由：莊家 ${dText} 點易爆，閒家守住不爆。` : `建議：要牌 (Hit)。莊家 ${dText} 為強牌。`;
-                if (pScore >= 13 && pScore <= 16) 
-                    return (dScore >= 2 && dScore <= 6) ? `建議：停牌 (Stand)。理由：莊家亮 ${dText} 易爆，閒家靜觀其變。` : `建議：要牌 (Hit)。莊家顯示強牌 ${dText}。`;
-                if (pScore >= 17) return `建議：停牌 (Stand)。硬牌 ${pScore} 點，要牌爆牌風險過高。`;
+                // 3. 軟牌策略
+                const isSoft = pHand.some(c => c.value === 'A') && (pHand.reduce((acc, c) => acc + (['J','Q','K','10'].includes(c.value)?10:(c.value==='A'?1:parseInt(c.value))), 0) + 10 <= 21);
+                if (isSoft) {
+                    if (score === 13 || score === 14) {
+                        if (dScore === 5 || dScore === 6) return canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`;
+                        return `建議：要牌 (Hit)。`;
+                    }
+                    if (score === 15 || score === 16) {
+                        if (dScore >= 4 && dScore <= 6) return canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`;
+                        return `建議：要牌 (Hit)。`;
+                    }
+                    if (score === 17) {
+                        if (dScore >= 3 && dScore <= 6) return canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`;
+                        return `建議：要牌 (Hit)。`;
+                    }
+                    if (score === 18) {
+                        if (dScore === 6) return canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`;
+                        return `建議：停牌 (Stand)。`;
+                    }
+                    if (score >= 19) return `建議：停牌 (Stand)。`;
+                    return `建議：要牌 (Hit)。`;
+                }
+
+                // 4. 硬牌策略
+                if (score <= 8) return `建議：要牌 (Hit)。`;
+                if (score === 9 && (dScore >= 3 && dScore <= 6)) return canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`;
+                if (score === 10 && dScore <= 9) return canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`;
+                if (score === 11) return canDouble ? `建議：加倍 (Double)。` : `建議：要牌 (Hit)。`;
+                
+                if (score === 12) {
+                    if (dScore >= 4 && dScore <= 6) return `建議：停牌 (Stand)。`;
+                    return `建議：要牌 (Hit)。`;
+                }
+                if (score >= 13 && score <= 16 && dScore <= 6) return `建議：停牌 (Stand)。`;
+                if (score >= 17) return `建議：停牌 (Stand)。`;
 
                 return `建議：要牌 (Hit)。`;
             };
 
             const startGame = () => {
-                if (chips < 100) { setGameState('bankrupt'); setMessage('籌碼不足 100 元，請早早睡。'); return; }
+                if (chips < 100) { setGameState('bankrupt'); setMessage('籌碼不足 100 元。'); return; }
                 const newDeck = initDeck();
-                const p1 = newDeck.pop(); const d1 = newDeck.pop();
-                const p2 = newDeck.pop(); const d2 = newDeck.pop();
+                const p1 = newDeck.pop(); 
+                const p2 = newDeck.pop();
+                const d1 = newDeck.pop(); 
+                
                 setChips(prev => prev - 100); 
                 setBets([100]);
                 setDeck(newDeck); 
                 setPlayerHands([[p1, p2]]); 
-                setDealerHand([d1, d2]); 
+                setDealerHand([d1]); 
                 setCurrentHandIdx(0);
+                setInsuranceBet(0);
+                setLastNetWin(null);
                 
                 if (isBlackjack([p1, p2])) {
                     setShowBJEffect(true);
                     setTimeout(() => setShowBJEffect(false), 3000);
-                    startDealerTurn([[p1, p2]], [d1, d2], newDeck, [100]);
+                    startDealerTurn([[p1, p2]], [d1], newDeck, [100], 0);
                 } else {
-                    setGameState('playing'); setMessage('請做出您的決策。');
+                    setGameState('playing'); 
+                    setMessage(d1.value === 'A' ? '庄家亮 A，是否買保險？' : '請做出您的決策。');
                 }
+            };
+
+            const buyInsurance = () => {
+                if (chips < 50) { setMessage('籌碼不足！'); return; }
+                setChips(prev => prev - 50);
+                setInsuranceBet(50);
+                setMessage('已購買保險 ($50)。');
             };
 
             const hit = () => {
@@ -310,15 +326,15 @@
                 const newHands = [...playerHands];
                 newHands[currentHandIdx] = [...newHands[currentHandIdx], card];
                 setDeck(newDeck); setPlayerHands(newHands);
-                if (calculateScore(newHands[currentHandIdx]) >= 21 || newHands[currentHandIdx].length === 5) {
-                    moveToNextHandOrDealer(newHands, currentHandIdx, bets);
+                if (calculateScore(newHands[currentHandIdx]) >= 21) {
+                    moveToNextHandOrDealer(newHands, currentHandIdx, bets, insuranceBet);
                 }
             };
 
-            const stand = () => moveToNextHandOrDealer(playerHands, currentHandIdx, bets);
+            const stand = () => moveToNextHandOrDealer(playerHands, currentHandIdx, bets, insuranceBet);
 
             const doubleDown = () => {
-                if (chips < 100) { setMessage('籌碼不足，無法加倍！'); return; }
+                if (chips < 100) { setMessage('籌碼不足！'); return; }
                 setChips(prev => prev - 100);
                 const newBets = [...bets]; newBets[currentHandIdx] = 200; setBets(newBets);
                 const newDeck = [...deck];
@@ -326,11 +342,11 @@
                 const newHands = [...playerHands];
                 newHands[currentHandIdx] = [...newHands[currentHandIdx], card];
                 setDeck(newDeck); setPlayerHands(newHands);
-                moveToNextHandOrDealer(newHands, currentHandIdx, newBets);
+                moveToNextHandOrDealer(newHands, currentHandIdx, newBets, insuranceBet);
             };
 
             const splitHand = () => {
-                if (chips < 100) { setMessage('籌碼不足，無法分牌！'); return; }
+                if (chips < 100) { setMessage('籌碼不足！'); return; }
                 setChips(prev => prev - 100);
                 const newDeck = [...deck];
                 const c1 = playerHands[0][0]; const c2 = playerHands[0][1];
@@ -338,7 +354,7 @@
                 setDeck(newDeck);
                 setPlayerHands([[c1, nc1], [c2, nc2]]);
                 setBets([100, 100]); setCurrentHandIdx(0);
-                setMessage('已分牌！請操作第一手牌。');
+                setMessage('已分牌，請操作。');
             };
 
             const surrender = () => {
@@ -346,20 +362,25 @@
                 const refund = Math.floor(currentBet / 2);
                 setChips(prev => prev + refund);
                 setGameState('ended');
-                setMessage(`您選擇了投降，拿回一半賭注 ($${refund})。`);
-                setBets([0]); 
+                
+                // 損益計算：拿回一半，即損失一半
+                const net = refund - currentBet; // 50 - 100 = -50
+                setLastNetWin(net);
+                
+                setMessage(`已投降，拿回 $${refund}。`);
+                setBets([0]);
             };
 
-            const moveToNextHandOrDealer = (hands, idx, currentBets) => {
+            const moveToNextHandOrDealer = (hands, idx, currentBets, currentIns) => {
                 if (hands.length === 2 && idx === 0) {
                     setCurrentHandIdx(1);
-                    setMessage('第一手結束，請操作第二手。');
+                    setMessage('請操作第二手。');
                 } else {
-                    startDealerTurn(hands, dealerHand, deck, currentBets);
+                    startDealerTurn(hands, dealerHand, deck, currentBets, currentIns);
                 }
             };
 
-            const startDealerTurn = (pHands, dHand, currentDeck, currentBets) => {
+            const startDealerTurn = (pHands, dHand, currentDeck, currentBets, currentIns) => {
                 setGameState('dealer_turn');
                 let cDealerHand = [...dHand];
                 let cDeck = [...currentDeck];
@@ -370,47 +391,75 @@
                         setDealerHand([...cDealerHand]);
                         setTimeout(runDealer, 600);
                     } else {
-                        calculateResults(pHands, cDealerHand, currentBets);
+                        calculateResults(pHands, cDealerHand, currentBets, currentIns);
                     }
                 };
-                if (pHands.every(h => calculateScore(h) > 21)) { calculateResults(pHands, cDealerHand, currentBets); } 
-                else { setTimeout(runDealer, 400); }
+                setTimeout(runDealer, 400);
             };
 
-            const calculateResults = (pHands, finalDealerHand, currentBets) => {
+            const calculateResults = (pHands, finalDealerHand, currentBets, currentIns) => {
                 const dScore = calculateScore(finalDealerHand);
                 const dBlackjack = isBlackjack(finalDealerHand);
                 setGameState('ended');
                 
-                let resultMsg = ""; let totalWin = 0;
+                let resultMsg = ""; 
+                let totalReturn = 0; // 總拿回的金額
+                let totalInvested = currentBets.reduce((a, b) => a + b, 0) + currentIns; // 總投入金額
+
+                if (currentIns > 0) {
+                    if (dBlackjack) { 
+                        resultMsg += "保險獲勝! "; 
+                        totalReturn += currentIns * 3; // 保險 1 賠 2，含本金拿回 3
+                    } else { 
+                        resultMsg += "保險失效。 "; 
+                    }
+                }
+
                 pHands.forEach((hand, i) => {
-                    if (currentBets[i] === 0) return;
-                    const pScore = calculateScore(hand); const pBlackjack = isBlackjack(hand);
-                    const isCharlie = hand.length === 5 && pScore <= 21;
+                    if (currentBets[i] === 0) return; // 投降或無效手
+                    const pScore = calculateScore(hand); 
+                    const pBlackjack = isBlackjack(hand); 
                     const bet = currentBets[i];
                     let label = pHands.length > 1 ? `[手${i+1}]` : "";
-                    if (pScore > 21) { resultMsg += `${label}爆牌輸。 `; }
-                    else if (pBlackjack && !dBlackjack) { resultMsg += `${label}BJ獎金! `; totalWin += bet * 2.5; }
-                    else if (isCharlie) { resultMsg += `${label}五小龍勝! `; totalWin += bet * 2; }
-                    else if (dBlackjack) { resultMsg += `${label}莊家BJ輸。 `; }
-                    else if (dScore > 21 || pScore > dScore) { resultMsg += `${label}贏了! `; totalWin += bet * 2; }
-                    else if (pScore === dScore) { resultMsg += `${label}平手。 `; totalWin += bet; }
-                    else { resultMsg += `${label}點數輸。 `; }
+                    
+                    if (pScore > 21) { 
+                        resultMsg += `${label}爆牌輸。 `; 
+                    }
+                    else if (pBlackjack && !dBlackjack) { 
+                        resultMsg += `${label}BJ獎! `; 
+                        totalReturn += bet * 2.5; // 100 -> 250 (1.5倍)
+                    }
+                    else if (dBlackjack && !pBlackjack) { 
+                        resultMsg += `${label}庄BJ輸。 `; 
+                    }
+                    else if (dScore > 21 || pScore > dScore) { 
+                        resultMsg += `${label}贏! `; 
+                        totalReturn += bet * 2; // 100 -> 200 (1倍)
+                    }
+                    else if (pScore === dScore) { 
+                        resultMsg += `${label}平手。 `; 
+                        totalReturn += bet; // 100 -> 100
+                    }
+                    else { 
+                        resultMsg += `${label}輸。 `; 
+                    }
                 });
-                setChips(prev => prev + totalWin); setMessage(resultMsg || "遊戲結束。");
+                
+                setChips(prev => prev + totalReturn);
+                setMessage(resultMsg || "遊戲結束。");
+                
+                // 計算並設定本局損益
+                setLastNetWin(totalReturn - totalInvested);
             };
 
             useEffect(() => {
                 if (gameState === 'playing' && playerHands[currentHandIdx]) {
                     setAdvice(getStrategyAdvice(playerHands[currentHandIdx], dealerHand));
-                } else {
-                    setAdvice('');
-                }
+                } else setAdvice('');
             }, [playerHands, currentHandIdx, gameState, dealerHand]);
 
             return (
                 <div className="space-y-6 animate-fade-in-up pb-10 text-center mx-auto w-full max-w-sm">
-                    
                     {showBJEffect && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none text-center">
                             <div className="animate-bj-burst text-center">
@@ -421,64 +470,72 @@
 
                     <div className="flex justify-between items-center bg-slate-800/80 p-5 rounded-2xl border border-yellow-500/30 shadow-lg text-center">
                         <div className="flex flex-col items-center flex-1 border-r border-yellow-500/10">
-                            <div className="flex items-center gap-2 mb-1 justify-center"><Icon name="database" className="text-yellow-500" size={18} /><p className="text-[10px] text-slate-400 uppercase font-black tracking-widest text-center">Balance</p></div>
+                            <div className="flex items-center gap-2 mb-1 justify-center text-center"><Icon name="database" className="text-yellow-500" size={18} /><p className="text-[10px] text-slate-400 uppercase font-black tracking-widest text-center">Balance</p></div>
                             <p className="text-2xl font-black text-white text-center">$ {chips}</p>
                         </div>
                         <div className="flex flex-col items-center flex-1">
-                            <div className="flex items-center gap-2 mb-1 justify-center text-center"><Icon name="coins" className="text-yellow-500" size={18} /><p className="text-[10px] text-slate-400 uppercase font-black tracking-widest text-center">Total Bet</p></div>
-                            <p className="text-2xl font-black text-yellow-500 text-center">$ {bets.reduce((a,b)=>a+b, 0)}</p>
+                            <div className="flex items-center gap-2 mb-1 justify-center text-center text-center"><Icon name="coins" className="text-yellow-500" size={18} /><p className="text-[10px] text-slate-400 uppercase font-black tracking-widest text-center">Bet</p></div>
+                            <p className="text-2xl font-black text-yellow-500 text-center">$ {bets.reduce((a,b)=>a+b, 0) + insuranceBet}</p>
                         </div>
                     </div>
 
                     <div className="bg-slate-800/60 p-5 rounded-[3rem] border border-white/5 shadow-2xl relative text-center">
                         <div className="mb-4">
-                            <div className="flex justify-center items-center gap-2 mb-3"><span className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Dealer</span><span className="text-xs font-bold text-slate-400">({(gameState === 'ended' || gameState === 'dealer_turn') ? calculateScore(dealerHand) : '?'})</span></div>
-                            <div className="flex justify-center gap-2 text-center min-h-[100px] items-center">
+                            <div className="flex justify-center items-center gap-2 mb-3 text-center text-center text-center"><span className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center text-center text-center">Dealer</span><span className="text-xs font-bold text-slate-400">({calculateScore(dealerHand)})</span></div>
+                            <div className="flex justify-center gap-2 min-h-[110px] items-center text-center text-center text-center text-center">
                                 {dealerHand.length > 0 ? dealerHand.map((card, i) => (
-                                    <div key={i} className={`playing-card ${(card.suit === '♥' || card.suit === '♦') ? 'text-rose-600' : 'text-slate-900'}`}>{gameState === 'playing' && i === 1 ? <CardBack className="w-full h-full !border-none !shadow-none" /> : `${card.value}${card.suit}`}</div>
-                                )) : <div className="flex gap-2 opacity-10 justify-center"><CardBack /><CardBack /></div>}
+                                    <div key={i} className={`playing-card ${(card.suit === '♥' || card.suit === '♦') ? 'text-rose-600' : 'text-slate-900'}`}>{card.value}{card.suit}</div>
+                                )) : <div className="flex gap-2 opacity-10 justify-center mx-auto text-center text-center text-center text-center text-center"><CardBack /><CardBack /></div>}
                             </div>
                         </div>
-                        <div className="relative h-8 flex items-center justify-center my-2 text-center"><div className="w-full h-px bg-slate-700/40 text-center"></div><div className="absolute px-4 py-0.5 bg-slate-800/60 rounded-full border border-white/10 text-[9px] font-black text-yellow-500 uppercase tracking-[0.2em] italic text-center">VIP TABLE</div></div>
-                        <div className="flex gap-2 justify-center text-center">
+                        <div className="relative h-8 flex items-center justify-center my-2 text-center text-center text-center text-center text-center"><div className="w-full h-px bg-slate-700/40 text-center text-center text-center text-center text-center"></div><div className="absolute px-4 py-0.5 bg-slate-800/60 rounded-full border border-white/10 text-[9px] font-black text-yellow-500 uppercase tracking-[0.2em] italic text-center text-center text-center text-center text-center">MACAU REAL RULES</div></div>
+                        <div className="flex gap-2 justify-center text-center text-center text-center text-center text-center">
                             {playerHands.length > 0 ? playerHands.map((hand, hIdx) => (
-                                <div key={hIdx} className={`flex-1 flex flex-col items-center p-2 rounded-xl transition-all ${currentHandIdx === hIdx && gameState === 'playing' ? 'bg-yellow-500/10 border border-yellow-500/40 shadow-inner' : 'opacity-60'} text-center`}>
-                                    <div className="flex justify-center gap-1.5 flex-wrap min-h-[90px] items-center">
+                                <div key={hIdx} className={`flex-1 flex flex-col items-center p-2 rounded-xl transition-all ${currentHandIdx === hIdx && gameState === 'playing' ? 'bg-yellow-500/10 border border-yellow-500/40 shadow-inner' : 'opacity-60'} text-center text-center text-center text-center text-center`}>
+                                    <div className="flex justify-center gap-1.5 flex-wrap min-h-[100px] items-center text-center text-center text-center text-center">
                                         {hand.map((card, i) => <div key={i} className={`playing-card !w-[60px] !h-[85px] !text-[1.1rem] ${(card.suit === '♥' || card.suit === '♦') ? 'text-rose-600' : 'text-slate-900'}`}>{card.value}{card.suit}</div>)}
                                     </div>
-                                    <span className="mt-2 text-xs font-black text-yellow-500 text-center">{calculateScore(hand)}</span>
+                                    <span className="mt-2 text-xs font-black text-yellow-500 text-center text-center text-center text-center text-center">{calculateScore(hand)}</span>
                                 </div>
-                            )) : <div className="flex gap-2 opacity-10 justify-center text-center"><CardBack /><CardBack /></div>}
+                            )) : <div className="flex gap-2 opacity-10 justify-center mx-auto text-center text-center text-center text-center text-center text-center"><CardBack /><CardBack /></div>}
                         </div>
                     </div>
 
                     {advice && (
-                        <div className="bg-yellow-500/20 border-2 border-yellow-500/40 p-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl animate-pulse text-center">
-                            <Icon name="brain-circuit" className="text-yellow-500 shrink-0" size={24} />
-                            <p className="text-sm font-black text-yellow-400 italic text-center leading-relaxed text-center">{advice}</p>
+                        <div className="bg-yellow-500/20 border-2 border-yellow-500/40 p-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl animate-pulse text-center text-center text-center text-center text-center">
+                            <Icon name="brain-circuit" className="text-yellow-500 shrink-0 text-center text-center text-center text-center" size={24} />
+                            <p className="text-sm font-black text-yellow-400 italic text-center leading-relaxed text-center text-center text-center text-center text-center text-center">{advice}</p>
                         </div>
                     )}
 
-                    <div className="p-4 bg-black/60 rounded-2xl border border-white/10 min-h-[80px] flex items-center justify-center text-center shadow-inner text-center"><p className="text-base font-bold italic text-slate-200 text-center">{message}</p></div>
+                    <div className="p-4 bg-black/60 rounded-2xl border border-white/10 min-h-[80px] flex flex-col items-center justify-center text-center shadow-inner text-center text-center text-center text-center text-center">
+                        <p className="text-base font-bold italic text-slate-200 text-center text-center text-center text-center text-center">{message}</p>
+                        {gameState === 'ended' && lastNetWin !== null && (
+                            <p className={`text-xl font-black mt-1 ${lastNetWin > 0 ? 'text-green-400' : (lastNetWin < 0 ? 'text-red-400' : 'text-yellow-400')}`}>
+                                本局損益: {lastNetWin >= 0 ? '+' : ''}{lastNetWin}
+                            </p>
+                        )}
+                    </div>
 
-                    <div className="text-center">
+                    <div className="text-center text-center text-center text-center text-center text-center">
                         {gameState === 'idle' || gameState === 'ended' ? (
-                            <div className="grid grid-cols-4 gap-2 text-center">
-                                <button onClick={startGame} className="col-span-3 py-6 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-2xl font-black text-white shadow-xl active:scale-95 text-xl uppercase flex items-center justify-center">下注 $100</button>
-                                <button onClick={resetSession} className="py-6 bg-slate-800 border border-slate-700 rounded-2xl font-black text-slate-400 active:scale-95 text-xs flex items-center justify-center">重設</button>
+                            <div className="grid grid-cols-4 gap-2 text-center text-center text-center text-center text-center">
+                                <button onClick={startGame} className="col-span-3 py-6 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-2xl font-black text-white shadow-xl active:scale-95 text-xl uppercase flex items-center justify-center text-center text-center text-center text-center text-center text-center">下注 $100</button>
+                                <button onClick={resetSession} className="py-6 bg-slate-800 border border-slate-700 rounded-2xl font-black text-slate-400 active:scale-95 text-xs flex items-center justify-center text-center text-center text-center text-center text-center text-center">重設</button>
                             </div>
                         ) : gameState === 'bankrupt' ? (
-                            <button onClick={resetSession} className="w-full py-8 bg-rose-600/20 border border-rose-600/50 rounded-2xl font-black text-rose-500 text-xl text-center">籌碼用完，請早早睡。</button>
+                            <button onClick={resetSession} className="w-full py-8 bg-rose-600/20 border border-rose-600/50 rounded-2xl font-black text-rose-500 text-xl text-center text-center text-center text-center text-center text-center">籌碼用完，請重設。</button>
                         ) : (
-                            <div className="space-y-3 text-center">
-                                <div className="grid grid-cols-2 gap-3 text-center">
-                                    <button disabled={gameState !== 'playing'} onClick={hit} className="py-6 rounded-2xl font-black text-white bg-indigo-600 shadow-xl active:scale-95 text-xl text-center flex items-center justify-center">要牌</button>
-                                    <button disabled={gameState !== 'playing'} onClick={stand} className="py-6 rounded-2xl font-black text-white bg-rose-600 shadow-xl active:scale-95 text-xl text-center flex items-center justify-center">停牌</button>
+                            <div className="space-y-3 text-center text-center text-center text-center text-center text-center">
+                                <div className="grid grid-cols-2 gap-3 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                    <button disabled={gameState !== 'playing'} onClick={hit} className="py-6 rounded-2xl font-black text-white bg-indigo-600 shadow-xl active:scale-95 text-xl text-center flex items-center justify-center text-center text-center text-center text-center text-center text-center text-center">要牌</button>
+                                    <button disabled={gameState !== 'playing'} onClick={stand} className="py-6 rounded-2xl font-black text-white bg-rose-600 shadow-xl active:scale-95 text-xl text-center flex items-center justify-center text-center text-center text-center text-center text-center text-center text-center text-center">停牌</button>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 text-center">
-                                    <button disabled={gameState !== 'playing' || playerHands[currentHandIdx].length !== 2} onClick={doubleDown} className={`py-4 rounded-xl font-black text-white shadow-lg text-sm flex items-center justify-center ${playerHands[currentHandIdx].length === 2 ? 'bg-amber-600' : 'bg-slate-800 text-slate-600 opacity-50'}`}>加倍</button>
-                                    <button disabled={gameState !== 'playing' || playerHands[currentHandIdx][0].value !== playerHands[currentHandIdx][1].value || playerHands.length > 1} onClick={splitHand} className={`py-4 rounded-xl font-black text-white shadow-lg text-sm flex items-center justify-center ${(playerHands[currentHandIdx].length === 2 && playerHands[currentHandIdx][0].value === playerHands[currentHandIdx][1].value && playerHands.length === 1) ? 'bg-purple-600' : 'bg-slate-800 text-slate-600 opacity-50'}`}>分牌</button>
-                                    <button disabled={gameState !== 'playing' || playerHands[currentHandIdx].length !== 2 || playerHands.length > 1} onClick={surrender} className={`py-4 rounded-xl font-black text-white shadow-lg text-sm flex items-center justify-center ${(playerHands[currentHandIdx].length === 2 && playerHands.length === 1) ? 'bg-zinc-600' : 'bg-slate-800 text-slate-600 opacity-50'}`}>投降</button>
+                                <div className="grid grid-cols-4 gap-2 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                    <button disabled={gameState !== 'playing' || playerHands[currentHandIdx].length !== 2} onClick={doubleDown} className={`py-4 rounded-xl font-black text-white shadow-lg text-sm flex items-center justify-center text-center text-center text-center text-center text-center ${playerHands[currentHandIdx].length === 2 ? 'bg-amber-600' : 'bg-slate-800 text-slate-600 opacity-50'}`}>加倍</button>
+                                    <button disabled={gameState !== 'playing' || playerHands[currentHandIdx][0].value !== playerHands[currentHandIdx][1].value || playerHands.length > 1} onClick={splitHand} className={`py-4 rounded-xl font-black text-white shadow-lg text-sm flex items-center justify-center text-center text-center text-center text-center text-center text-center ${(playerHands[currentHandIdx].length === 2 && playerHands[currentHandIdx][0].value === playerHands[currentHandIdx][1].value && playerHands.length === 1) ? 'bg-purple-600' : 'bg-slate-800 text-slate-600 opacity-50'}`}>分牌</button>
+                                    <button disabled={gameState !== 'playing' || playerHands[currentHandIdx].length !== 2 || playerHands.length > 1} onClick={surrender} className={`py-4 rounded-xl font-black text-white shadow-lg text-sm flex items-center justify-center text-center text-center text-center text-center text-center text-center ${(playerHands[currentHandIdx].length === 2 && playerHands.length === 1) ? 'bg-zinc-600' : 'bg-slate-800 text-slate-600 opacity-50'}`}>投降</button>
+                                    <button disabled={gameState !== 'playing' || dealerHand[0].value !== 'A' || insuranceBet > 0 || playerHands.length > 1} onClick={buyInsurance} className={`py-4 rounded-xl font-black text-white shadow-lg text-sm flex items-center justify-center text-center text-center text-center text-center text-center text-center ${(dealerHand[0].value === 'A' && insuranceBet === 0) ? 'bg-blue-600' : 'bg-slate-800 text-slate-600 opacity-50'}`}>保險</button>
                                 </div>
                             </div>
                         )}
@@ -489,44 +546,17 @@
 
         const ItineraryApp = () => {
             const [activeTab, setActiveTab] = useState(0);
-            const [currentTime, setCurrentTime] = useState(new Date());
-            const currentYear = new Date().getFullYear();
 
-            const itinerary = useMemo(() => [
-                {
-                    date: `${currentYear}-01-15`,
-                    events: [
-                        { id: 'd1e1', time: '16:00', icon: 'car', title: '機場接送出發', desc: '專車前往桃園機場。' },
-                        { id: 'd1e2', time: '17:30', icon: 'utensils', title: '桃園機場 VIP 室', desc: 'T1 航廈體驗貴賓室。' },
-                        { id: 'd1e3', time: '20:10', icon: 'plane', title: '起飛 NX615', desc: '桃園 T1 -> 澳門。' },
-                        { id: 'd1e4', time: '22:05', icon: 'map-pin', title: '抵達澳門', desc: '辦理入關手續。' },
-                        { id: 'd1e5', time: '23:00', icon: 'hotel', title: '入住 W Hotel', desc: '享受尊榮服務。' },
-                        { id: 'd1e6', time: '23:30', icon: 'sparkles', title: '賭場試手氣', desc: '感受澳門之夜。' },
-                    ]
-                },
-                {
-                    date: `${currentYear}-01-16`,
-                    events: [
-                        { id: 'd2e1', time: '10:00', icon: 'sun', title: '慵懶早晨', desc: '補眠或享用飯店設施。' },
-                        { id: 'd2e2', time: '12:00', icon: 'trophy', title: '玥龍軒 米其林午餐', desc: '米其林一星粵菜。' },
-                        { id: 'd2e3', time: '14:30', icon: 'sparkles', title: '賭場爭霸 / 自由活動', desc: '各大博弈場巡禮。' },
-                        { id: 'd2e4', time: '19:00', icon: 'moon', title: '晚餐 & 澳門夜景', desc: '路氹金光大道漫步。' },
-                    ]
-                },
-                {
-                    date: `${currentYear}-01-17`,
-                    events: [
-                        { id: 'd3e1', time: '09:30', icon: 'hotel', title: '退房 Checkout', desc: '辦理退房手續。' },
-                        { id: 'd3e2', time: '10:00', icon: 'car', title: '前往澳門機場', desc: '專車接送至機場。' },
-                        { id: 'd3e3', time: '12:00', icon: 'plane', title: '起飛 NX612', desc: '澳門 -> 桃園 T1。' },
-                        { id: 'd3e4', time: '13:40', icon: 'map-pin', title: '抵達台灣', desc: '平安抵達溫暖的家。' },
-                    ]
-                }
-            ], [currentYear]);
+            const tabs = [
+                { id: 0, label: '行程', title: '啟程目標' },
+                { id: 1, label: '21點', title: '澳門賭場預演' },
+                { id: 2, label: '清單', title: '行前準備清單' }
+            ];
 
             const [checklist, setChecklist] = useState([
                 { id: 1, text: '護照 (效期6個月以上)', checked: false, category: '重要證件' },
-                { id: 2, text: '機票 / 酒店訂房確認單', checked: false, category: '重要證件' },
+                { id: 2, text: '機票 (請確認名字跟日期是否正確)', checked: false, category: '重要證件' },
+                { id: 3, text: '酒店訂房確認單 (請確認日期跟名字是否正確)', checked: false, category: '重要證件' },
                 { id: 4, text: '港幣 / 澳門幣 (現金)', checked: false, category: '錢財' },
                 { id: 5, text: '信用卡 (海外回饋高)', checked: false, category: '錢財' },
                 { id: 6, text: '網卡 / 開通漫遊', checked: false, category: '電子設備' },
@@ -539,114 +569,76 @@
                 { id: 11, text: '雨具 (摺疊傘)', checked: false, category: '雜項' },
             ]);
 
-            const toggleCheck = (id) => { setChecklist(checklist.map(item => item.id === id ? { ...item, checked: !item.checked } : item)); };
-            const tabs = [{ id: 0, label: '1/15', title: '啟程 & 奢華入住' }, { id: 1, label: '1/16', title: '米其林饗宴 & 娛樂' }, { id: 2, label: '1/17', title: '滿載而歸' }, { id: 3, label: '21點', title: 'VIP ROOM 預演' }, { id: 4, label: '清單', title: '行前準備清單' }];
-            const groupedChecklist = useMemo(() => checklist.reduce((acc, item) => { if (!acc[item.category]) acc[item.category] = []; acc[item.category].push(item); return acc; }, {}), [checklist]);
+            const toggleCheck = (id) => { 
+                setChecklist(checklist.map(item => item.id === id ? { ...item, checked: !item.checked } : item)); 
+            };
+
+            const groupedChecklist = useMemo(() => checklist.reduce((acc, item) => { 
+                if (!acc[item.category]) acc[item.category] = []; 
+                acc[item.category].push(item); 
+                return acc; 
+            }, {}), [checklist]);
+
             const progress = Math.round((checklist.filter(i => i.checked).length / checklist.length) * 100);
 
-            useEffect(() => { const timer = setInterval(() => setCurrentTime(new Date()), 60000); return () => clearInterval(timer); }, []);
-            
-            const tripStartDate = new Date(currentYear, 0, 15, 16, 0, 0);
-            const getCountdown = () => {
-                const diff = tripStartDate - currentTime;
-                if (diff <= 0) return "奢華之旅進行中！";
-                const d = Math.floor(diff / 86400000); const h = Math.floor((diff % 86400000) / 3600000); const m = Math.floor((diff % 3600000) / 60000);
-                return `${d}天 ${h}時 ${m}分`;
-            };
-
-            const getEventStatus = (dayDate, eventTime, nextEventTime) => {
-                const [year, month, day] = dayDate.split('-').map(Number);
-                const [hours, minutes] = eventTime.split(':').map(Number);
-                const eventStart = new Date(year, month - 1, day, hours, minutes, 0);
-                let eventEnd;
-                if (nextEventTime) {
-                    const [nHours, nMinutes] = nextEventTime.split(':').map(Number);
-                    eventEnd = new Date(year, month - 1, day, nHours, nMinutes, 0);
-                } else {
-                    eventEnd = new Date(eventStart.getTime() + 2 * 60 * 60 * 1000);
-                }
-                if (currentTime < eventStart) return 'FUTURE';
-                if (currentTime >= eventStart && currentTime < eventEnd) return 'NOW';
-                return 'PAST';
-            };
-
             return (
-                <div className="min-h-screen bg-slate-950 flex justify-center items-start pt-0 sm:pt-6 sm:pb-6 font-sans text-slate-100 relative overflow-hidden text-center text-center">
-                    <div className="fixed inset-0 bg-card-pattern pointer-events-none text-center"></div>
-                    <div className="w-full max-w-md bg-slate-900 min-h-screen sm:min-h-[90vh] sm:rounded-[3rem] sm:border-[10px] sm:border-slate-800 shadow-[0_0_100px_rgba(0,0,0,0.8)] relative overflow-hidden pb-12 text-center z-10 border-slate-800 mx-auto text-center">
+                <div className="min-h-screen bg-slate-950 flex justify-center items-start pt-0 sm:pt-6 sm:pb-6 font-sans text-slate-100 relative overflow-hidden text-center text-center text-center text-center text-center text-center text-center">
+                    <div className="fixed inset-0 bg-card-pattern pointer-events-none text-center text-center text-center text-center text-center text-center text-center text-center text-center"></div>
+                    <div className="w-full max-w-md bg-slate-900 min-h-screen sm:min-h-[90vh] sm:rounded-[3rem] sm:border-[10px] sm:border-slate-800 shadow-[0_0_100px_rgba(0,0,0,0.8)] relative overflow-hidden pb-12 text-center z-10 border-slate-800 mx-auto text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
                         
-                        <header className="relative bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-955 p-10 shadow-2xl border-b border-white/5 text-center text-center">
-                            <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none overflow-hidden text-center"><div className="absolute top-[-20%] right-[-20%] w-80 h-80 bg-yellow-500 rounded-full blur-[100px]"></div></div>
-                            <div className="relative z-10 text-center">
-                                <div className="flex flex-col items-center mb-6 text-center text-center">
-                                    <span className="bg-white/15 px-5 py-1.5 rounded-full text-xs font-black tracking-[0.2em] text-yellow-400 border border-yellow-400/20 uppercase mb-4 text-center">MACAO VIP TRIP</span>
-                                    <Icon name="crown" className="text-yellow-500 text-center" size={32} />
+                        <header className="relative bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-955 p-10 shadow-2xl border-b border-white/5 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                            <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none overflow-hidden text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center"><div className="absolute top-[-20%] right-[-20%] w-80 h-80 bg-yellow-500 rounded-full blur-[100px]"></div></div>
+                            <div className="relative z-10 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                <div className="flex flex-col items-center mb-6 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                    <span className="bg-white/15 px-5 py-1.5 rounded-full text-xs font-black tracking-[0.2em] text-yellow-400 border border-yellow-400/20 uppercase mb-4 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">MACAO VIP TRIP</span>
+                                    <Icon name="crown" className="text-yellow-500 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center" size={32} />
                                 </div>
-                                <h1 className="text-4xl font-black mb-2 text-white leading-tight drop-shadow-xl text-center">澳門奢華之旅</h1>
-                                <p className="text-blue-300 flex items-center justify-center gap-3 text-lg font-black mt-4 italic text-center text-center">
-                                    <Icon name="timer" size={22} className="text-yellow-500" /> {getCountdown()}
-                                </p>
+                                <h1 className="text-4xl font-black mb-2 text-white leading-tight drop-shadow-xl text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">澳門奢華之旅</h1>
+                                <p className="text-blue-300 flex items-center justify-center gap-3 text-lg font-black mt-4 italic text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">期待下次啟程</p>
                             </div>
                         </header>
 
-                        <div className="sticky top-0 z-20 bg-slate-900/90 backdrop-blur-2xl pt-6 px-4 shadow-xl border-b border-white/10 text-center">
-                            <div className="flex justify-between bg-slate-800/50 rounded-2xl p-1.5 mb-6 min-w-max border border-white/5 mx-auto text-center text-center">
+                        <div className="sticky top-0 z-20 bg-slate-900/90 backdrop-blur-2xl pt-6 px-4 shadow-xl border-b border-white/10 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                            <div className="flex justify-between bg-slate-800/50 rounded-2xl p-1.5 mb-6 min-w-max border border-white/5 mx-auto text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
                                 {tabs.map((tab, index) => (
                                     <button key={index} onClick={() => setActiveTab(index)}
-                                        className={`min-w-[70px] py-3 px-6 text-sm font-black rounded-xl transition-all duration-500 ${activeTab === index ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-slate-300'}`}>
+                                        className={`min-w-[80px] py-3 px-6 text-sm font-black rounded-xl transition-all duration-500 ${activeTab === index ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-slate-300 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center'}`}>
                                         {tab.label}
                                     </button>
                                 ))}
                             </div>
-                            <div className="px-2 pb-5 text-center">
-                                <h2 className="text-2xl font-black text-white italic tracking-tight flex items-center justify-center gap-3 text-center text-center">
-                                    <span className="w-2 h-8 bg-yellow-500 rounded-full text-center"></span>{tabs[activeTab].title}
-                                </h2>
-                            </div>
                         </div>
 
-                        <main className="px-6 pt-4 pb-24 text-center relative z-10 w-full overflow-hidden text-center text-center text-center">
-                            {activeTab < 3 && (
-                                <div className="space-y-10 relative text-center text-center text-center">
-                                    <div className="absolute left-1/2 top-8 bottom-8 w-1 bg-gradient-to-b from-yellow-500/50 via-slate-800 to-transparent -translate-x-1/2 opacity-20 text-center"></div>
-                                    {itinerary[activeTab].events.map((event, idx) => {
-                                        const nextEvent = itinerary[activeTab].events[idx + 1];
-                                        const status = getEventStatus(itinerary[activeTab].date, event.time, nextEvent?.time);
-                                        const isNow = status === 'NOW'; const isPast = status === 'PAST';
-                                        const isNext = !isPast && !isNow && (idx === 0 || getEventStatus(itinerary[activeTab].date, itinerary[activeTab].events[idx-1].time, event.time) === 'PAST');
-                                        return (
-                                            <div key={event.id} className={`relative transition-all duration-700 text-center ${isPast ? 'opacity-30 grayscale-[0.5]' : 'opacity-100'} text-center`}>
-                                                <div className={`mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center border-4 border-slate-900 z-10 transition-all ${isNow ? 'bg-yellow-500 text-slate-900 scale-110 shadow-2xl' : 'bg-slate-800 text-slate-300'}`}><Icon name={event.icon} size={24} /></div>
-                                                <div className={`rounded-[2rem] p-7 border transition-all duration-500 ${isNow ? 'bg-slate-800 border-yellow-500 shadow-2xl scale-[1.02]' : 'bg-slate-800/40 border-slate-700/30'} backdrop-blur-sm text-center text-center`}>
-                                                    <div className="flex justify-center gap-3 items-center mb-4 text-center">
-                                                        <span className="text-sm font-black bg-blue-500/20 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/10 uppercase text-center">{event.time}</span>
-                                                        {isNow && <span className="text-xs bg-yellow-500 text-slate-950 px-2.5 py-1 rounded-lg font-black animate-pulse uppercase text-center">Live</span>}
-                                                        {isNext && <span className="text-xs bg-white/10 text-white px-2.5 py-1 rounded-lg font-bold uppercase tracking-tighter text-center">Next</span>}
-                                                    </div>
-                                                    <h3 className={`text-xl font-black mb-2 ${isNow ? 'text-yellow-400' : 'text-white'} text-center`}>{event.title}</h3>
-                                                    <p className="text-slate-300 text-base leading-relaxed font-medium text-center">{event.desc}</p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                        <main className="px-6 pt-10 pb-24 text-center relative z-10 w-full overflow-hidden text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                            
+                            {activeTab === 0 && (
+                                <div className="space-y-10 flex flex-col items-center justify-center py-20 animate-fade-in-up text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                    <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mb-4 border border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.2)] text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                        <Icon name="sparkles" size={40} className="text-yellow-500 text-center text-center text-center text-center text-center text-center text-center text-center" />
+                                    </div>
+                                    <div className="bg-slate-800/40 p-10 rounded-[3rem] border border-white/5 shadow-2xl backdrop-blur-md text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                        <h2 className="text-4xl font-black text-white italic tracking-widest drop-shadow-lg text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                            中 1 萬以上就出發
+                                        </h2>
+                                    </div>
                                 </div>
                             )}
 
-                            {activeTab === 3 && <BlackjackGame />}
+                            {activeTab === 1 && <BlackjackGame />}
 
-                            {activeTab === 4 && (
-                                <div className="space-y-8 text-center text-center text-center text-center">
-                                    <div className="bg-slate-800/60 p-7 rounded-[2.5rem] border border-white/5 shadow-lg backdrop-blur-md text-center">
-                                        <div className="flex justify-between items-center mb-4 px-1 text-center"><span className="text-sm font-black text-yellow-500 uppercase tracking-wider italic text-center">Packing Progress</span><span className="text-lg font-black text-white text-center">{progress}%</span></div>
-                                        <div className="bg-slate-950 rounded-full h-4 w-full overflow-hidden border border-white/5 text-center"><div className="h-full bg-gradient-to-r from-yellow-500 to-amber-600 transition-all duration-1000 ease-out text-center" style={{width: `${progress}%`}}></div></div>
+                            {activeTab === 2 && (
+                                <div className="space-y-8 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                    <div className="bg-slate-800/60 p-7 rounded-[2.5rem] border border-white/5 shadow-lg backdrop-blur-md text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                        <div className="flex justify-between items-center mb-4 px-1 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center"><span className="text-sm font-black text-yellow-500 uppercase tracking-wider italic text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">Packing Progress</span><span className="text-lg font-black text-white text-center text-center text-center text-right text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">{progress}%</span></div>
+                                        <div className="bg-slate-950 rounded-full h-4 w-full overflow-hidden border border-white/5 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center"><div className="h-full bg-gradient-to-r from-yellow-500 to-amber-600 transition-all duration-1000 ease-out text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center" style={{width: `${progress}%`}}></div></div>
                                     </div>
                                     {Object.entries(groupedChecklist).map(([category, items]) => (
-                                        <div key={category} className="bg-slate-800/30 rounded-[2.5rem] border border-slate-700/50 overflow-hidden shadow-xl backdrop-blur-md mb-6 text-center text-center">
-                                            <div className="bg-slate-800/80 p-6 border-b border-white/5 flex items-center justify-center gap-4 text-center text-center"><Icon name="clipboard-check" className="text-yellow-400 text-center" size={24} /><h3 className="text-xl font-black text-white tracking-tight italic text-center">{category}</h3></div>
+                                        <div key={category} className="bg-slate-800/30 rounded-[2.5rem] border border-slate-700/50 overflow-hidden shadow-xl backdrop-blur-md mb-6 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                            <div className="bg-slate-800/80 p-6 border-b border-white/5 flex items-center justify-center gap-4 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center"><Icon name="clipboard-check" className="text-yellow-400 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center" size={24} /><h3 className="text-xl font-black text-white tracking-tight italic text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">{category}</h3></div>
                                             {items.map((item) => (
-                                                <div key={item.id} onClick={() => toggleCheck(item.id)} className="p-6 flex items-center gap-6 cursor-pointer border-b border-white/5 hover:bg-white/5 active:bg-white/10 transition-all group justify-center text-center">
-                                                    <Icon name={item.checked ? "square-check" : "square"} size={36} className={item.checked ? "text-green-400" : "text-slate-600 text-center"} />
-                                                    <span className={`text-lg font-bold transition-all text-center ${item.checked ? 'text-slate-600 line-through opacity-70' : 'text-slate-200'}`}>{item.text}</span>
+                                                <div key={item.id} onClick={() => toggleCheck(item.id)} className="p-6 flex items-center gap-6 cursor-pointer border-b border-white/5 hover:bg-white/5 active:bg-white/10 transition-all group justify-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                                                    <Icon name={item.checked ? "square-check" : "square"} size={36} className={item.checked ? "text-green-400" : "text-slate-600 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center"} />
+                                                    <span className={`text-lg font-bold transition-all text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center ${item.checked ? 'text-slate-600 line-through opacity-70' : 'text-slate-200'}`}>{item.text}</span>
                                                 </div>
                                             ))}
                                         </div>
