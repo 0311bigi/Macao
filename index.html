@@ -339,6 +339,58 @@
                 else setBankerHand(prev => prev.map(c => c.id === id ? { ...c, hidden: false } : c));
             };
 
+            // 動態產生補牌規則文字的變數
+            let pRuleText = "";
+            let bRuleText = "";
+
+            if (gameState !== 'betting' && playerHand.length >= 2 && bankerHand.length >= 2) {
+                const p2Rev = !playerHand[0].hidden && !playerHand[1].hidden;
+                const b2Rev = !bankerHand[0].hidden && !bankerHand[1].hidden;
+                const p2Score = getHandScore([playerHand[0], playerHand[1]]);
+                const b2Score = getHandScore([bankerHand[0], bankerHand[1]]);
+                
+                // 判斷是否天牌 (只在該方揭曉，或雙方皆揭曉時才公佈，避免劇透)
+                const pNat = p2Rev && p2Score >= 8;
+                const bNat = b2Rev && b2Score >= 8;
+                const anyNat = pNat || bNat;
+
+                if (p2Rev && b2Rev && (p2Score >= 8 || b2Score >= 8)) {
+                    pRuleText = p2Score >= 8 ? `天牌(${p2Score})\n無須補牌` : `對手天牌\n無須補牌`;
+                    bRuleText = b2Score >= 8 ? `天牌(${b2Score})\n無須補牌` : `對手天牌\n無須補牌`;
+                } 
+                else if (anyNat) {
+                    if (pNat) pRuleText = `天牌(${p2Score})\n無須補牌`;
+                    if (bNat) bRuleText = `天牌(${b2Score})\n無須補牌`;
+                } 
+                else {
+                    if (p2Rev) {
+                        pRuleText = p2Score <= 5 ? "0-5點\n規則補牌" : "6-7點\n規則停牌";
+                    }
+                    if (b2Rev) {
+                        if (!p2Rev) {
+                            bRuleText = "等待閒家\n開牌確認";
+                        } else if (playerHand.length === 2) {
+                            bRuleText = b2Score <= 5 ? "莊0-5點\n規則補牌" : "莊6-7點\n規則停牌";
+                        } else if (playerHand.length === 3) {
+                            const p3 = playerHand[2];
+                            if (!p3.hidden) {
+                                const p3v = getCardValue(p3);
+                                let bDraw = false;
+                                if (b2Score <= 2) bDraw = true;
+                                else if (b2Score === 3 && p3v !== 8) bDraw = true;
+                                else if (b2Score === 4 && p3v >= 2 && p3v <= 7) bDraw = true;
+                                else if (b2Score === 5 && p3v >= 4 && p3v <= 7) bDraw = true;
+                                else if (b2Score === 6 && p3v >= 6 && p3v <= 7) bDraw = true;
+                                
+                                bRuleText = bDraw ? `閒補${p3v}點\n莊${b2Score}必補` : `閒補${p3v}點\n莊${b2Score}不補`;
+                            } else {
+                                bRuleText = "等待閒家\n補第3張";
+                            }
+                        }
+                    }
+                }
+            }
+
             useEffect(() => {
                 if (gameState !== 'revealing') return;
                 const pRev = playerHand.filter(c => !c.hidden).length;
@@ -500,6 +552,8 @@
                         <div className="absolute top-0 left-0 w-full bg-yellow-500/20 py-1.5 px-2 border-b border-yellow-500/40 z-20 shadow-md backdrop-blur-sm">
                             <p className={`text-[11px] font-bold text-yellow-300 font-serif-tc tracking-wide leading-relaxed ${gameState === 'revealing' ? 'animate-hint' : ''}`}>{baccaratHint}</p>
                         </div>
+                        
+                        {/* 莊家區塊 */}
                         <div className="mt-10">
                             <div className="flex justify-center items-center gap-2 mb-2 relative w-full px-2">
                                 {bets.B > 0 && <div className="absolute left-2 flex items-center"><span className="text-[10px] font-bold text-yellow-300 bg-rose-900/80 px-2 py-0.5 rounded shadow border border-rose-500/50">已押莊</span></div>}
@@ -507,14 +561,33 @@
                                 <span className="text-sm font-bold text-white bg-rose-600 px-3 py-0.5 rounded-full shadow-md">{getRevealedScore(bankerHand)}</span>
                                 {(bets.BP > 0 || bets.S6 > 0) && <div className="absolute right-2 flex items-center gap-1">{bets.BP > 0 && <span className="text-[9px] font-bold text-rose-300 bg-rose-950/80 px-1.5 py-0.5 rounded border border-rose-700/50">對</span>}{bets.S6 > 0 && <span className="text-[9px] font-bold text-yellow-400 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-yellow-600/50">S6</span>}</div>}
                             </div>
-                            <div className="flex justify-center items-center min-h-[100px]">
+                            <div className="flex justify-center items-center min-h-[100px] relative">
                                 {bankerHand.length > 0 ? bankerHand.map(c => (<FlippableCard key={c.id} card={c} onClick={() => revealCard('banker', c.id)} />)) : <div className="text-emerald-700/50 text-sm font-bold italic font-serif-tc">等待發牌</div>}
+                                
+                                {/* 莊家補牌規則提示板 */}
+                                {bRuleText && (
+                                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex flex-col items-center justify-center border border-emerald-500/30 bg-[#022c22]/90 rounded-lg py-1.5 w-[56px] shadow-lg z-20 pointer-events-none animate-fade-in-up">
+                                        <Icon name="book-open" size={10} className="text-yellow-500/80 mb-0.5" />
+                                        <span className="text-[9px] text-emerald-100 text-center leading-[1.3] whitespace-pre-wrap font-serif-tc tracking-wide">{bRuleText}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
+                        
                         <div className="relative h-px bg-emerald-700/50 w-full my-3"></div>
+                        
+                        {/* 閒家區塊 */}
                         <div className="mb-2">
-                            <div className="flex justify-center items-center min-h-[100px] mb-2">
+                            <div className="flex justify-center items-center min-h-[100px] mb-2 relative">
                                 {playerHand.length > 0 ? playerHand.map(c => (<FlippableCard key={c.id} card={c} onClick={() => revealCard('player', c.id)} />)) : <div className="text-emerald-700/50 text-sm font-bold italic font-serif-tc">等待發牌</div>}
+                                
+                                {/* 閒家補牌規則提示板 */}
+                                {pRuleText && (
+                                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex flex-col items-center justify-center border border-emerald-500/30 bg-[#022c22]/90 rounded-lg py-1.5 w-[56px] shadow-lg z-20 pointer-events-none animate-fade-in-up">
+                                        <Icon name="book-open" size={10} className="text-yellow-500/80 mb-0.5" />
+                                        <span className="text-[9px] text-emerald-100 text-center leading-[1.3] whitespace-pre-wrap font-serif-tc tracking-wide">{pRuleText}</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="flex justify-center items-center gap-2 relative w-full px-2">
                                 {bets.P > 0 && <div className="absolute left-2 flex items-center"><span className="text-[10px] font-bold text-yellow-300 bg-blue-900/80 px-2 py-0.5 rounded shadow border border-blue-500/50">已押閒</span></div>}
@@ -525,7 +598,7 @@
                         </div>
                     </div>
 
-                    {/* 修改：將下注與結算控制區移到大路的前面 */}
+                    {/* 下注與結算控制區 */}
                     {gameState === 'betting' ? (
                         <div className="bg-emerald-950/80 p-3 rounded-2xl border border-emerald-800 shadow-inner">
                             <p className="text-[10px] text-emerald-400 mb-2 font-bold uppercase tracking-widest">點擊籌碼下注 (每注 $100)</p>
@@ -555,7 +628,7 @@
                         </div>
                     )}
 
-                    {/* 修改：將大路移到最下方 */}
+                    {/* 大路 */}
                     <div className="bg-emerald-900/40 p-2 rounded-xl border border-emerald-700/50 overflow-hidden shadow-inner">
                         <div className="flex justify-between items-center mb-1 px-1">
                             <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest">大路 (Big Road)</span>
