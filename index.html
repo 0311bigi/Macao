@@ -158,24 +158,61 @@
             if (['J', 'Q', 'K'].includes(value)) {
                 return <div className={`absolute inset-0 flex items-center justify-center text-[2.5rem] font-serif opacity-30 ${color}`}>公</div>;
             }
+            
             const pips = [];
-            const createPip = (key, top, left, rot = 0) => (
-                <div key={key} className={`absolute ${color} text-lg leading-none`} style={{ top, left, transform: `translate(-50%, -50%) rotate(${rot}deg)` }}>{suit}</div>
-            );
             const num = value === 'A' ? 1 : parseInt(value);
             
-            if (num === 1) pips.push(createPip(1, '50%', '50%'));
-            if (num === 2) pips.push(createPip(1, '20%', '50%'), createPip(2, '80%', '50%', 180));
-            if (num === 3) pips.push(createPip(1, '20%', '50%'), createPip(2, '50%', '50%'), createPip(3, '80%', '50%', 180));
-            if (num === 4) pips.push(createPip(1, '20%', '30%'), createPip(2, '20%', '70%'), createPip(3, '80%', '30%', 180), createPip(4, '80%', '70%', 180));
-            if (num === 5) pips.push(createPip(1, '20%', '30%'), createPip(2, '20%', '70%'), createPip(5, '50%', '50%'), createPip(3, '80%', '30%', 180), createPip(4, '80%', '70%', 180));
-            if (num === 6) pips.push(createPip(1, '20%', '30%'), createPip(2, '20%', '70%'), createPip(3, '50%', '30%'), createPip(4, '50%', '70%'), createPip(5, '80%', '30%', 180), createPip(6, '80%', '70%', 180));
-            if (num === 7) pips.push(createPip(1, '20%', '30%'), createPip(2, '20%', '70%'), createPip(7, '35%', '50%'), createPip(3, '50%', '30%'), createPip(4, '50%', '70%'), createPip(5, '80%', '30%', 180), createPip(6, '80%', '70%', 180));
-            if (num === 8) pips.push(createPip(1, '20%', '30%'), createPip(2, '20%', '70%'), createPip(7, '35%', '50%'), createPip(8, '65%', '50%', 180), createPip(3, '50%', '30%'), createPip(4, '50%', '70%'), createPip(5, '80%', '30%', 180), createPip(6, '80%', '70%', 180));
-            if (num === 9) pips.push(createPip(1, '20%', '30%'), createPip(2, '20%', '70%'), createPip(3, '40%', '30%'), createPip(4, '40%', '70%'), createPip(9, '50%', '50%'), createPip(5, '60%', '30%', 180), createPip(6, '60%', '70%', 180), createPip(7, '80%', '30%', 180), createPip(8, '80%', '70%', 180));
-            if (num === 10) pips.push(createPip(1, '20%', '30%'), createPip(2, '20%', '70%'), createPip(9, '30%', '50%'), createPip(3, '40%', '30%'), createPip(4, '40%', '70%'), createPip(5, '60%', '30%', 180), createPip(6, '60%', '70%', 180), createPip(10, '70%', '50%', 180), createPip(7, '80%', '30%', 180), createPip(8, '80%', '70%', 180));
+            // 新增：根據點數多寡，動態調整花色的大小，防止 9 點、10 點太過擁擠
+            let pipSize = 'text-lg';
+            if (num >= 9) pipSize = 'text-[10px]'; 
+            else if (num >= 7) pipSize = 'text-xs';
+            else if (num >= 4) pipSize = 'text-sm';
 
-            return <div className="absolute inset-0 pt-6 pb-6 pointer-events-none">{pips}</div>;
+            const createPip = (key, top, left, rot = 0) => (
+                <div key={key} className={`absolute ${color} ${pipSize} leading-none`} style={{ top, left, transform: `translate(-50%, -50%) rotate(${rot}deg)` }}>{suit}</div>
+            );
+            
+            // 重新計算完美的排列間距
+            if (num === 1) pips.push(createPip(1, '50%', '50%'));
+            if (num === 2) pips.push(createPip(1, '10%', '50%'), createPip(2, '90%', '50%', 180));
+            if (num === 3) pips.push(createPip(1, '10%', '50%'), createPip(2, '50%', '50%'), createPip(3, '90%', '50%', 180));
+            if (num === 4) pips.push(createPip(1, '10%', '28%'), createPip(2, '10%', '72%'), createPip(3, '90%', '28%', 180), createPip(4, '90%', '72%', 180));
+            if (num === 5) pips.push(createPip(1, '10%', '28%'), createPip(2, '10%', '72%'), createPip(5, '50%', '50%'), createPip(3, '90%', '28%', 180), createPip(4, '90%', '72%', 180));
+            if (num === 6) pips.push(
+                createPip(1, '10%', '28%'), createPip(2, '10%', '72%'), 
+                createPip(3, '50%', '28%'), createPip(4, '50%', '72%'), 
+                createPip(5, '90%', '28%', 180), createPip(6, '90%', '72%', 180)
+            );
+            if (num === 7) pips.push(
+                createPip(1, '10%', '28%'), createPip(2, '10%', '72%'), 
+                createPip(7, '30%', '50%'), 
+                createPip(3, '50%', '28%'), createPip(4, '50%', '72%'), 
+                createPip(5, '90%', '28%', 180), createPip(6, '90%', '72%', 180)
+            );
+            if (num === 8) pips.push(
+                createPip(1, '10%', '28%'), createPip(2, '10%', '72%'), 
+                createPip(7, '30%', '50%'), 
+                createPip(3, '50%', '28%'), createPip(4, '50%', '72%'), 
+                createPip(8, '70%', '50%', 180),
+                createPip(5, '90%', '28%', 180), createPip(6, '90%', '72%', 180)
+            );
+            if (num === 9) pips.push(
+                createPip(1, '10%', '28%'), createPip(2, '10%', '72%'), 
+                createPip(3, '36%', '28%'), createPip(4, '36%', '72%'), 
+                createPip(9, '50%', '50%'), 
+                createPip(5, '64%', '28%', 180), createPip(6, '64%', '72%', 180), 
+                createPip(7, '90%', '28%', 180), createPip(8, '90%', '72%', 180)
+            );
+            if (num === 10) pips.push(
+                createPip(1, '10%', '28%'), createPip(2, '10%', '72%'), 
+                createPip(3, '36%', '28%'), createPip(4, '36%', '72%'), 
+                createPip(9, '23%', '50%'), 
+                createPip(10, '77%', '50%', 180),
+                createPip(5, '64%', '28%', 180), createPip(6, '64%', '72%', 180), 
+                createPip(7, '90%', '28%', 180), createPip(8, '90%', '72%', 180)
+            );
+
+            return <div className="absolute inset-0 py-3 pointer-events-none">{pips}</div>;
         };
 
         const FlippableCard = ({ card, onClick }) => {
@@ -760,12 +797,15 @@
             };
 
             const buyInsurance = () => { if (chips < 50) { setResultMessage('籌碼不足！'); return; } setChips(prev => prev - 50); setInsuranceBet(50); setResultMessage('已購買保險 ($50)。'); };
+            
             const hit = () => {
                 const newDeck = [...deck]; const card = newDeck.pop(); const newHands = [...playerHands]; newHands[currentHandIdx] = [...newHands[currentHandIdx], card];
                 setDeck(newDeck); setPlayerHands(newHands);
                 if (calculateScore(newHands[currentHandIdx]) >= 21) moveToNextHandOrDealer(newHands, currentHandIdx, bets, insuranceBet);
             };
+            
             const stand = () => moveToNextHandOrDealer(playerHands, currentHandIdx, bets, insuranceBet);
+            
             const doubleDown = () => {
                 const currentBet = bets[currentHandIdx];
                 if (chips < currentBet) { setResultMessage('籌碼不足！'); return; }
@@ -775,6 +815,7 @@
                 setDeck(newDeck); setPlayerHands(newHands);
                 moveToNextHandOrDealer(newHands, currentHandIdx, newBets, insuranceBet);
             };
+            
             const splitHand = () => {
                 const currentBet = bets[currentHandIdx];
                 if (chips < currentBet) { setResultMessage('籌碼不足！'); return; }
@@ -794,6 +835,7 @@
                 setDeck(newDeck); setPlayerHands(newHands); setBets(newBets); 
                 setResultMessage(`已分牌，請操作第 ${currentHandIdx + 1} 手。`);
             };
+            
             const surrender = () => {
                 const currentBet = bets[currentHandIdx]; const refund = Math.floor(currentBet / 2); setChips(prev => prev + refund); setGameState('ended');
                 setLastNetWin(refund - currentBet); setResultMessage(`已投降，拿回 $${refund}。`); setBets([0]); setBlackjackHint("留得青山在，不怕沒柴燒！");
@@ -805,20 +847,29 @@
             };
             
             const startDealerTurn = (pHands, dHand, currentDeck, currentBets, currentIns) => {
-                setGameState('dealer_turn'); let cDealerHand = [...dHand]; let cDeck = [...currentDeck];
+                setGameState('dealer_turn'); 
+                let cDealerHand = [...dHand]; 
+                let cDeck = [...currentDeck];
                 
-                if (!(pHands.length === 1 && isBlackjack(pHands[0]))) {
+                // 檢查是否所有玩家手牌都已經爆牌
+                const allBusted = pHands.every(h => calculateScore(h) > 21);
+                const playerHasBJ = pHands.length === 1 && isBlackjack(pHands[0]);
+
+                if (!playerHasBJ && !allBusted) {
                     const initDScore = calculateScore(cDealerHand);
                     if (initDScore >= 12 && initDScore < 17) {
                         setBlackjackHint(`莊家 ${initDScore} 點！全場緊盯，準備大喊「公」讓他爆！`);
                     } else {
                         setBlackjackHint("換莊家補牌，看他怎麼死！");
                     }
+                } else if (allBusted) {
+                    setBlackjackHint("💥 玩家爆牌，莊家不需補牌直接獲勝！");
                 }
                 
                 const runDealer = () => {
                     const score = calculateScore(cDealerHand);
-                    if (score < 17) { 
+                    // 修正：如果玩家全爆牌，莊家就不必再抽牌了
+                    if (!allBusted && score < 17) { 
                         const card = cDeck.pop(); 
                         cDealerHand.push(card); 
                         setDealerHand([...cDealerHand]); 
@@ -838,30 +889,94 @@
                         calculateResults(pHands, cDealerHand, currentBets, currentIns); 
                     }
                 };
-                setTimeout(runDealer, 600);
+                
+                if (playerHasBJ || allBusted) {
+                    setTimeout(runDealer, 400);
+                } else {
+                    setTimeout(runDealer, 800);
+                }
             };
             
+            // 終極結算引擎 (完全重構，確保防呆與邏輯精確)
             const calculateResults = (pHands, finalDealerHand, currentBets, currentIns) => {
-                const dScore = calculateScore(finalDealerHand); const dBlackjack = isBlackjack(finalDealerHand); setGameState('ended');
-                let resultMsg = ""; let totalReturn = 0; let totalInvested = currentBets.reduce((a, b) => a + b, 0) + currentIns;
-                if (currentIns > 0) { if (dBlackjack) { resultMsg += "保險獲勝! "; totalReturn += currentIns * 3; } else { resultMsg += "保險失效。 "; } }
-                pHands.forEach((hand, i) => {
-                    if (currentBets[i] === 0) return;
-                    const pScore = calculateScore(hand); const pBlackjack = pHands.length === 1 && isBlackjack(hand); const bet = currentBets[i];
-                    let label = pHands.length > 1 ? `[手${i+1}]` : "";
-                    if (pScore > 21) { resultMsg += `${label}爆牌輸。 `; }
-                    else if (pBlackjack && !dBlackjack) { resultMsg += `${label}BJ獎! `; totalReturn += bet * 2.5; }
-                    else if (dBlackjack && !pBlackjack) { resultMsg += `${label}莊BJ輸。 `; }
-                    else if (dScore > 21 || pScore > dScore) { resultMsg += `${label}贏! `; totalReturn += bet * 2; }
-                    else if (pScore === dScore) { resultMsg += `${label}平。 `; totalReturn += bet; }
-                    else { resultMsg += `${label}輸。 `; }
-                });
-                setChips(prev => prev + totalReturn); setResultMessage(resultMsg || "遊戲結束。"); setLastNetWin(totalReturn - totalInvested);
+                const dScore = calculateScore(finalDealerHand); 
+                const dBlackjack = isBlackjack(finalDealerHand); 
+                setGameState('ended');
                 
-                if (pHands.length === 1 && isBlackjack(pHands[0])) {
-                    setBlackjackHint(dBlackjack ? "⚖️ 雙方都 Blackjack 平手！太巧了吧！" : "💰 爽拿 1.5 倍！這把 Blackjack 贏得漂亮！");
+                let resultMsg = ""; 
+                let totalReturn = 0; 
+                let totalInvested = currentBets.reduce((a, b) => a + b, 0) + currentIns;
+                let allBust = true;
+                let playerHasBJ = false;
+
+                if (currentIns > 0) { 
+                    if (dBlackjack) { 
+                        resultMsg += "保險獲勝! "; 
+                        totalReturn += currentIns * 3; 
+                    } else { 
+                        resultMsg += "保險失效。 "; 
+                    } 
+                }
+
+                pHands.forEach((hand, i) => {
+                    const bet = currentBets[i] || 0;
+                    if (bet === 0) return;
+                    
+                    const pScore = calculateScore(hand); 
+                    const isPBJ = pHands.length === 1 && isBlackjack(hand); 
+                    
+                    if (pScore <= 21) allBust = false;
+                    if (isPBJ) playerHasBJ = true;
+
+                    let label = pHands.length > 1 ? `[手${i+1}]` : "";
+                    
+                    // 嚴格判定順序：先判斷爆牌
+                    if (pScore > 21) { 
+                        resultMsg += `${label}爆牌輸。 `; 
+                    }
+                    else if (isPBJ && !dBlackjack) { 
+                        resultMsg += `${label}BJ獎! `; 
+                        totalReturn += bet * 2.5; 
+                    }
+                    else if (dBlackjack && !isPBJ) { 
+                        resultMsg += `${label}莊BJ輸。 `; 
+                    }
+                    else if (dScore > 21 || pScore > dScore) { 
+                        resultMsg += `${label}贏! `; 
+                        totalReturn += bet * 2; 
+                    }
+                    else if (pScore === dScore) { 
+                        resultMsg += `${label}平。 `; 
+                        totalReturn += bet; 
+                    }
+                    else { 
+                        resultMsg += `${label}輸。 `; 
+                    }
+                });
+                
+                const netWin = totalReturn - totalInvested;
+                setChips(prev => prev + totalReturn); 
+                setResultMessage(resultMsg || "遊戲結束。"); 
+                setLastNetWin(netWin);
+                
+                // 智慧防護 Hint 邏輯：優先處理爆牌與 BJ
+                if (allBust) {
+                    setBlackjackHint("💥 爆牌了... 莊家不用補牌就贏了！下一把討回來！");
+                } else if (playerHasBJ && pHands.length === 1) {
+                    setBlackjackHint(dBlackjack ? "⚖️ 雙方都 Blackjack 平局！太巧了吧！" : "💰 爽拿 1.5 倍！這把 Blackjack 贏得漂亮！");
                 } else {
-                    setBlackjackHint(totalReturn > totalInvested ? "🎉 恭喜贏錢！" : (totalReturn === totalInvested ? "⚖️ 平局，和氣生財！" : "💸 勝敗乃兵家常事，再來！"));
+                    if (netWin > 0) {
+                        setBlackjackHint("🎉 恭喜贏錢！實力與運氣兼具！");
+                    } else if (netWin === 0) {
+                        // 處理保險救回本金的特殊平局
+                        if (currentIns > 0 && dBlackjack) {
+                            setBlackjackHint("🛡️ 莊家 Blackjack！好險有買保險，安全下莊！");
+                        } else {
+                            setBlackjackHint("⚖️ 平局 (Push)，和氣生財！沒輸就是贏！");
+                        }
+                    } else {
+                        setBlackjackHint("💸 勝敗乃兵家常事，下一把討回來！");
+                    }
                 }
             };
             
@@ -1023,10 +1138,10 @@
                     date: '3/7 (六) - Day 2',
                     events: [
                         { 
-                            time: '12:00', icon: 'utensils', title: '譚卉', desc: '9位用餐', highlight: true,
+                            time: '12:00', icon: 'utensils', title: '永利軒', desc: '9位用餐', highlight: true,
                             michelin: '米其林二星餐廳',
-                            address: '澳門體育館大馬路永利皇宮',
-                            mapLink: 'https://www.google.com/maps/search/?api=1&query=譚卉+澳門永利皇宮',
+                            address: '澳門仙德麗街永利澳門',
+                            mapLink: 'https://www.google.com/maps/search/?api=1&query=永利軒+澳門永利澳門',
                             dressCode: '請勿配戴任何類型的帽子。男士請穿著長褲、有袖上裝及請勿穿著露趾鞋。'
                         }
                     ]
